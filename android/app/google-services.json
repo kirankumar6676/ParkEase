@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "602484390027",
+    "project_id": "parkease-db-27d75",
+    "storage_bucket": "parkease-db-27d75.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:602484390027:android:afa829b31cdbbd8469fc8e",
+        "android_client_info": {
+          "package_name": "com.example.parkease"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbpqC4D9TVmJlZu_ngirYYF7vQdjG52zo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
