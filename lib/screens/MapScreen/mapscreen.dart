@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../Widget/Navbar.dart';
 import '../../Services/routes.dart';
 
@@ -11,6 +12,10 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   int _selectedIndex = 1; // Initially set to the "Map" tab (index 1)
+  late GoogleMapController _mapController;
+
+  // Coordinates of the parking area
+  final LatLng _parkingLocation = const LatLng(37.7749, -122.4194); // Replace with proper parking area coords
 
   void _onItemTapped(int index) {
     setState(() {
@@ -39,13 +44,29 @@ class _MapScreenState extends State<MapScreen> {
         automaticallyImplyLeading: false,
         title: const Text("Map Screen"),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("Map Page Content"),
-            const SizedBox(height: 20), // Add some spacing
-            ElevatedButton(
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: _parkingLocation,
+              zoom: 15, // Adjust the zoom level as needed
+            ),
+            onMapCreated: (GoogleMapController controller) {
+              _mapController = controller;
+            },
+            markers: {
+              Marker(
+                markerId: const MarkerId("parking_marker"),
+                position: _parkingLocation,
+                infoWindow: const InfoWindow(title: "Parking Area"),
+              ),
+            },
+          ),
+          Positioned(
+            bottom: 50,
+            left: 20,
+            right: 20,
+            child: ElevatedButton(
               onPressed: () {
                 // Navigate to the parking slot screen
                 Navigator.pushNamed(context, AppRoutes.parkingSlot);
@@ -63,13 +84,19 @@ class _MapScreenState extends State<MapScreen> {
                 style: TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: NavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
   }
 }
