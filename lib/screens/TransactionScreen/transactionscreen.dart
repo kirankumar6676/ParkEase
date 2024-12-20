@@ -39,8 +39,16 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   final List<Map<String, dynamic>> transactions = [
     {
+      "location": "Temple",
+      "name": "Temple Parking",
+      "spots": "10 Car Spots",
+      "distance": "3.3 km",
+      "price": "1 ₹",
+      "time": "per hr",
+    },
+    {
       "location": "Opal Tower",
-      "name": "Home",
+      "name": "Home Parking",
       "spots": "15 Car Spots",
       "distance": "3.3 km",
       "price": "25 ₹",
@@ -48,7 +56,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
     },
     {
       "location": "Marina Mall",
-      "name": "Office",
+      "name": "Office Parking",
       "spots": "80 Car Spots",
       "distance": "22.3 km",
       "price": "50 ₹",

@@ -37,6 +37,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Handle logout logic
+  void _logout() {
+    // Add any necessary logic for logging out here, like clearing user data or tokens
+    // Navigate to login page and clear navigation history
+    Navigator.pushReplacementNamed(context, AppRoutes.login);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,7 +76,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       body: Center(
-        child: const Text("Profile Page Content"),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(""),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _logout,
+              child: Text("Logout"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red, // Set button color to red
+                padding: EdgeInsets.symmetric(horizontal: 60, vertical: 10),
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: NavBar(
         selectedIndex: _selectedIndex,

@@ -13,28 +13,24 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   String? userName;
+  bool isBikeView = false;
+
+  List<Map<String, String>> cars = [];
+  List<Map<String, String>> bikes = [];
 
   @override
   void initState() {
     super.initState();
-    // Fetch the user's name after screen is initialized
     _fetchUserName();
   }
 
-  // Method to fetch user name from Firestore
   void _fetchUserName() async {
     String? name = await AuthServices().getUserName();
     setState(() {
-      userName = name ?? "User"; // Default to "User" if name is not found
+      userName = name ?? "User";
     });
   }
 
-  // Method to handle bottom nav item tap
-  // void _onItemTapped(int index) {
-  //   setState(() {
-  //     _selectedIndex = index;
-  //   });
-  // }
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -55,6 +51,74 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _showAddVehicleDialog(BuildContext context, bool isBike) {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController regNumberController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(isBike ? 'Add Bike' : 'Add Car'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                    labelText: isBike ? 'Bike Name' : 'Car Name'),
+              ),
+              TextField(
+                controller: regNumberController,
+                decoration: InputDecoration(labelText: 'Registration Number'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (nameController.text.isNotEmpty &&
+                    regNumberController.text.isNotEmpty) {
+                  setState(() {
+                    if (isBike) {
+                      bikes.add({
+                        'name': nameController.text,
+                        'regNumber': regNumberController.text,
+                      });
+                    } else {
+                      cars.add({
+                        'name': nameController.text,
+                        'regNumber': regNumberController.text,
+                      });
+                    }
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _removeVehicle(bool isBike, int index) {
+    setState(() {
+      if (isBike) {
+        bikes.removeAt(index);
+      } else {
+        cars.removeAt(index);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,15 +127,13 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         title: Container(
           width: double.infinity,
-          padding: EdgeInsets.all(10), // Padding inside the box
+          padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Color(0xFF655AE4), // Color #655ae4
-            borderRadius:
-                BorderRadius.circular(20), // 20px radius for smooth corners
+            color: Color(0xFF655AE4),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
             children: [
-              // "Park Ease" text at the top
               Text(
                 "Park Ease",
                 style: TextStyle(
@@ -81,8 +143,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SizedBox(height: 5),
-              // Space between "Park Ease" and "Hi, [userName]!"
-              // "Hi, [userName]!" text at the bottom
               Text(
                 "Hi, $userName!",
                 style: TextStyle(
@@ -97,25 +157,70 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          // Add the Row with IconButtons for Car, Bike, and Truck below the AppBar
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Car Icon Button with white rectangular background
-                _buildIconButton(Icons.directions_car, "Car", Colors.blue),
+                _buildIconButton(
+                    Icons.directions_car, "Car", Colors.blue, false),
                 SizedBox(width: 20),
-                // Bike Icon Button with white rectangular background
-                _buildIconButton(Icons.motorcycle, "Bike", Colors.grey),
-                SizedBox(width: 20),
-                // Truck Icon Button with white rectangular background
-                _buildIconButton(Icons.local_shipping, "Truck", Colors.blue),
+                _buildIconButton(Icons.motorcycle, "Bike", Colors.grey, true),
               ],
             ),
           ),
-          // Add other widgets like _widgetOptions based on _selectedIndex
-          // Expanded(child: _widgetOptions.elementAt(_selectedIndex)),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: isBikeView
+                  ? [
+                      ...bikes
+                          .asMap()
+                          .map((index, bike) {
+                            return MapEntry(
+                              index,
+                              BikeItem(
+                                bikeName: bike['name']!,
+                                bikeNumber: bike['regNumber']!,
+                                bikeImage: 'https://via.placeholder.com/150',
+                                iconColor: Colors.orange,
+                                onDelete: () => _removeVehicle(true, index),
+                              ),
+                            );
+                          })
+                          .values
+                          .toList(),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => _showAddVehicleDialog(context, true),
+                        child: Text('Add Bike'),
+                      ),
+                    ]
+                  : [
+                      ...cars
+                          .asMap()
+                          .map((index, car) {
+                            return MapEntry(
+                              index,
+                              CarItem(
+                                carName: car['name']!,
+                                carNumber: car['regNumber']!,
+                                carImage: 'https://via.placeholder.com/150',
+                                iconColor: Colors.purple,
+                                onDelete: () => _removeVehicle(false, index),
+                              ),
+                            );
+                          })
+                          .values
+                          .toList(),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => _showAddVehicleDialog(context, false),
+                        child: Text('Add Car'),
+                      ),
+                    ],
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: NavBar(
@@ -125,15 +230,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Helper method to build icon buttons with white rectangular background
-  Widget _buildIconButton(IconData icon, String label, Color color) {
+  Widget _buildIconButton(
+      IconData icon, String label, Color color, bool bikeView) {
     return Column(
       children: [
         Container(
-          padding: EdgeInsets.all(12), // Padding inside the container
+          padding: EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12), // Rounded corners
+            borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
             icon: Icon(
@@ -142,12 +247,140 @@ class _HomeScreenState extends State<HomeScreen> {
               size: 40,
             ),
             onPressed: () {
-              // Add your onPressed action here
+              setState(() {
+                isBikeView = bikeView;
+              });
             },
           ),
         ),
         Text(label),
       ],
+    );
+  }
+}
+
+class CarItem extends StatelessWidget {
+  final String carName;
+  final String carNumber;
+  final String carImage;
+  final Color iconColor;
+  final VoidCallback onDelete;
+
+  const CarItem({
+    required this.carName,
+    required this.carNumber,
+    required this.carImage,
+    required this.iconColor,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: CircleAvatar(
+          backgroundColor: iconColor.withOpacity(0.2),
+          child: Icon(Icons.directions_car, color: iconColor),
+        ),
+        title: Text(
+          carName,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        subtitle: Text(carNumber),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                carImage,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.red),
+              onPressed: onDelete,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class BikeItem extends StatelessWidget {
+  final String bikeName;
+  final String bikeNumber;
+  final String bikeImage;
+  final Color iconColor;
+  final VoidCallback onDelete;
+
+  const BikeItem({
+    required this.bikeName,
+    required this.bikeNumber,
+    required this.bikeImage,
+    required this.iconColor,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: CircleAvatar(
+          backgroundColor: iconColor.withOpacity(0.2),
+          child: Icon(Icons.motorcycle, color: iconColor),
+        ),
+        title: Text(
+          bikeName,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        subtitle: Text(bikeNumber),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                bikeImage,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.red),
+              onPressed: onDelete,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

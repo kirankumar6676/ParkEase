@@ -22,7 +22,8 @@ class _ParkingSlotScreenState extends State<ParkingSlotScreen> {
   ];
 
   final Map<String, String> slotStatus = {
-    "C07": "Selected",
+    "C01": "Booked",
+    // "C07": "Selected",
     "C09": "Booked",
   };
 
